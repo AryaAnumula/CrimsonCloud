@@ -1,0 +1,32 @@
+* { box-sizing: border-box; }
+html { scroll-behavior: auto; }
+body { margin: 0; min-width: 1050px; font-family: Arial, sans-serif; font-size: 15px; line-height: 1.5; color: #252525; background: #f4f4f4; }
+main { width: 1180px; max-width: calc(100% - 48px); margin: 28px auto; }
+header { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
+h1 { margin: 0; font-size: 27px; } h2 { margin: 0 0 16px; font-size: 21px; } h3 { font-size: 17px; margin: 24px 0 12px; }
+p { margin: 10px 0 16px; color: #505050; }
+nav { display: flex; align-items: center; gap: 25px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #ccc; }
+nav button { margin-left: auto; }
+a { color: #832334; }
+button { font: inherit; min-height: 38px; padding: 7px 14px; border: 1px solid #8e2434; border-radius: 3px; background: #8e2434; color: white; cursor: pointer; }
+button:hover { background: #6f1c29; } button:disabled { opacity: .55; cursor: wait; }
+section { padding: 22px; margin-bottom: 22px; background: white; border: 1px solid #ccc; border-radius: 4px; }
+label { display: flex; flex-direction: column; gap: 5px; font-weight: 600; font-size: 14px; }
+input, select { width: 100%; min-height: 38px; border: 1px solid #999; border-radius: 3px; padding: 7px 9px; font: inherit; background: white; color: #252525; }
+.form-field { display: flex; flex-direction: column; gap: 5px; }
+.task-choice { max-width: 340px; margin-bottom: 18px; }
+.task-form { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: end; margin-bottom: 20px; }
+.task-form > button { justify-self: start; }
+.table-area { overflow-x: auto; max-height: 390px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; text-align: left; }
+th, td { border: 1px solid #ccc; padding: 10px; vertical-align: top; }
+th { background: #eee; font-weight: 600; }
+details { margin-top: 18px; } summary { cursor: pointer; color: #832334; padding: 5px 0; }
+pre { margin: 8px 0; padding: 12px; background: #f5f5f5; border: 1px solid #ddd; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
+article { margin: 14px 0; }
+.success, .error { padding: 12px; border: 1px solid; background: white; }
+.success { color: #235f34; border-color: #5a8a66; } .error { color: #9b1c27; border-color: #b85c65; }
+a, button, input, select { outline-offset: 3px; } :focus-visible { outline: 2px solid #1769aa; }
+footer { font-size: 13px; color: #555; margin: 24px 0; }
+.login { width: 520px; padding: 28px; margin: 90px auto; background: white; border: 1px solid #ccc; }
+.login h1 { font-size: 23px; } .login form { display: grid; gap: 16px; } .login form button { justify-self: start; }
