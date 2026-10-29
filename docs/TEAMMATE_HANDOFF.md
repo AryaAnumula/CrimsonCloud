@@ -5,8 +5,11 @@ verified, and exactly what is left for the second half of the team.
 
 ## Where we are
 
-- Repository: `main` with three commits — the shared base, the rewritten DDL demonstration, and
-  setup hardening.
+- Repository: `main` carrying the first half's commits — the shared project base, the rewritten DDL
+  demonstration, setup hardening, this handoff, and one purpose comment above every function.
+- Only the first half is on `main` so far: the database layer, the setup tooling and the design
+  documents. Your commits add the remaining work listed below, so both halves are visible in the
+  same history.
 - Database layer is **finished and verified** on MySQL 8.0.46 and MongoDB 8.0.34.
 - The application runs locally and both roles can sign in.
 - Nothing here is a promise: everything listed under "verified" was executed against a real

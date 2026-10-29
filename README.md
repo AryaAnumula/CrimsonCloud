@@ -137,7 +137,7 @@ docs/PROJECT_REPORT_GUIDE.md        Report/contribution outline
 docs/source-materials/             Supplied requirements and original ER sketch
 ```
 
-Task-based SQL comments explain what each block achieves and why locking/constraints are needed. Files 01/02 are applied by setup; do not run them again over an existing installation from Workbench. In Workbench select your database and run 03/04 to inspect concepts; 03 uses a temporary table and the final 04 DML example rolls back a disposable draft. Run 05 in mongosh after selecting the database named by MONGODB_DB.
+Task-based SQL comments explain what each block achieves and why locking/constraints are needed. Files 01/02 are applied by setup; do not run them again over an existing installation from Workbench. In Workbench select your database and run 03/04 to inspect concepts; 03 creates and then drops its own `blood_bank_ddl_demo` schema, and the final 04 DML example rolls back a disposable draft. Run 05 in mongosh after selecting the database named by MONGODB_DB.
 
 Useful commands:
 

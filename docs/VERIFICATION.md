@@ -52,6 +52,9 @@ First run of the project against the machine's own database servers, replacing t
 - Passed: `admin` and `staff` both sign in; `/api/me` returns the session identity; `/api/dashboard` returns 200
 - Passed: `/api/me` without a session cookie returns 401
 - Passed: Rewritten `database/03_ddl_demo.sql` — 24 statements (CREATE DATABASE/TABLE, ALTER add/unique/modify/drop, CREATE VIEW, DROP INDEX/COLUMN/FK/VIEW/TABLE/DATABASE) all execute; demo schema removed afterwards; the 15 project tables remain intact
+- Passed: `database/04_important_queries.sql` — 18 statements execute on this install; the tables are still empty, so the demonstrations return no rows, and the final DML example rolls back
+- Passed: Login flow against the real database — `POST /api/login` 200 with a session cookie, `/api/me` returns `admin`/`ADMIN`, `/api/dashboard` and `/api/units` 200, anonymous `/api/me` 401
+- Passed: A POST whose `Origin` is `http://127.0.0.1:3000` is refused 403 because `APP_ORIGIN` is `http://localhost:3000`
 - Not yet run on this machine: full click-through workflow, `database/05_mongodb_queries.js` (needs `mongosh`), operator-supplied screenshots
 
 Desktop screenshots come from the actual application using isolated synthetic test records. Follow WORKFLOW_AND_TESTS.md for your own tests. All records in these checks are fictional; no clinical validation is claimed.
