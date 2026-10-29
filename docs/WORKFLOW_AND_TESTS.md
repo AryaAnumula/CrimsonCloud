@@ -11,7 +11,7 @@ Complete README.md setup. Start from empty databases and add hospitals/storage a
 5. Inspect inventory, request progress and issue records.
 6. Filter Reports by donation ID and retrieve the same MongoDB document; show nested answers and the aggregation.
 7. Inspect SQL traceability, keys, constraints, views, triggers, function/procedure and indexes.
-8. In Workbench select your database, then run 03_ddl_demo.sql and selected 04_important_queries.sql tasks. DDL uses a disposable object; the final draft DML example rolls back.
+8. Run 03_ddl_demo.sql and selected 04_important_queries.sql tasks in Workbench. The DDL file creates its own demo schema, shows CREATE/ALTER/DROP with keys, constraints, an index and a view, then removes everything (MySQL commits DDL, so there is nothing to roll back). The final draft DML example in the queries file rolls back.
 9. Show Staff denial of Admin-only operations. Explain genuine team contributions and limits.
 
 ## Record your own expected/actual results
