@@ -5,7 +5,9 @@ import { Actor, admin } from '@/lib/auth';
 import { body, ok, missing } from '@/lib/http';
 import * as v from '@/lib/validation';
 
-// Task group: staff. Each branch performs one named operation.
+// Task: POST /api/staff — Admin-only account creation.
+// The password is hashed with bcrypt (cost 12) before the INSERT, so only the hash reaches MySQL,
+// and the column's CHECK constraint refuses anything that is not a bcrypt hash.
 export async function staffTask(req: NextRequest, actor: Actor, rawId?: string, action = '') {
   const key = rawId ? v.id.parse(rawId) : 0;
   const data = req.method === 'DELETE' ? {} : await body(req);

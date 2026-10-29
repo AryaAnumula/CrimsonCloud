@@ -4,7 +4,11 @@ import { Actor } from '@/lib/auth';
 import { body, ok, missing } from '@/lib/http';
 import * as v from '@/lib/validation';
 
-// Task group: donors. Each branch performs one named operation.
+// Task: donor registration.
+//   POST /api/donors — insert one donor. The blood group must exist (foreign key), and the database
+//   itself refuses impossible values such as a future birth date or an out-of-range weight through
+//   its CHECK constraints and triggers, so a bad form cannot create a row even if the API is bypassed.
+// A donor has no other operation, so a URL id falls through to the shared 404.
 export async function donorsTask(req: NextRequest, actor: Actor, rawId?: string, action = '') {
   const key = rawId ? v.id.parse(rawId) : 0;
   const data = req.method === 'DELETE' ? {} : await body(req);

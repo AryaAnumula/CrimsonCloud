@@ -1,4 +1,7 @@
-// Task: Create local login accounts and blood-group reference rows, not fake stock.
+// Task: fill reference data only — two login accounts and the eight blood groups, never stock.
+// Safe to re-run: if any staff row exists the accounts are left untouched (passwords are not reset),
+// and the groups use INSERT IGNORE. Both accounts are stored as bcrypt hashes, so the plaintext in
+// .env is the only copy of those passwords. Password length is checked before the transaction opens.
 import 'dotenv/config';
 import mysql from 'mysql2/promise';
 import { hash } from 'bcryptjs';

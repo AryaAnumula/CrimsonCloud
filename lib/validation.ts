@@ -1,8 +1,17 @@
 import { z } from 'zod';
+// Task: every request body is parsed here, before any SQL or MongoDB call.
+// zod rejects wrong types, missing fields and out-of-range values and trims normalises text, so a
+// malformed request never reaches the database. The database still enforces its own CHECK and
+// trigger rules underneath: the two layers agree, and neither one trusts the other.
+
+// Required, trimmed text with an optional maximum length.
 const text = (max = 100) => z.string().trim().min(1).max(max);
 export const id = z.coerce.number().int().positive().max(2147483647);
+// Optional text: an empty string from a blank form field is stored as NULL, not ''.
 const optionalText = (max: number) => z.string().trim().max(max).optional().transform(v => v || null);
+// Optional e-mail: same idea, but the value must still look like an e-mail when supplied.
 const email = z.union([z.email().max(160), z.literal('')]).optional().transform(v => v || null);
+// Timestamps cross the API as ISO strings with an offset and are written as UTC DATETIME(3).
 const instant = z.iso.datetime({ offset: true });
 export const loginInput = z.object({ username: text(50).transform(v => v.toLowerCase()), password: z.string().min(1).max(72).refine(v => Buffer.byteLength(v, 'utf8') <= 72, 'Password is too long') });
 export const donorInput = z.object({ name: text(), dob: z.iso.date(), gender: optionalText(30),

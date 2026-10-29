@@ -1,4 +1,7 @@
-// Optional: insert fictional records for exploring queries. Not required to use the app.
+// Task (optional): insert clearly fictional records for trying the queries and screens.
+// Refuses to run unless the donor register is empty, so real project data is never mixed with demo
+// rows. Inserts donors, donations, units, MongoDB screenings, tests and one request in a single
+// transaction, and lets the real triggers and validator do their work instead of bypassing them.
 import 'dotenv/config';
 import mysql from 'mysql2/promise';
 import { MongoClient } from 'mongodb';

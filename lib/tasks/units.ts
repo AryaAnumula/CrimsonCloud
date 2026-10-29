@@ -5,7 +5,12 @@ import { Actor } from '@/lib/auth';
 import { body, ok, missing } from '@/lib/http';
 import * as v from '@/lib/validation';
 
-// Task group: units. Each branch performs one named operation.
+// Task: the life of a bag after collection.
+//   POST /api/units/:id/tests   — record a screening-panel or additional-review result
+//   POST /api/units/:id/release — QUARANTINED → AVAILABLE; triggers refuse a release without an
+//                                 approved screening and a passing panel, and keep capacity honest
+//   POST /api/units/:id/discard — discard a retained unit and free its storage slot
+//   POST /api/units/:id/move    — relocate a retained unit to another storage location.
 export async function unitsTask(req: NextRequest, actor: Actor, rawId?: string, action = '') {
   const key = rawId ? v.id.parse(rawId) : 0;
   const data = req.method === 'DELETE' ? {} : await body(req);

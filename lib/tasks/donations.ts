@@ -6,7 +6,14 @@ import { Actor, HttpError } from '@/lib/auth';
 import { body, ok, missing } from '@/lib/http';
 import * as v from '@/lib/validation';
 
-// Task group: donations. Each branch performs one named operation.
+// Task: donations and their screening, in one handler because the screening step is keyed by donation.
+//   POST /api/donations                — insert the donation and its blood unit in ONE transaction,
+//                                        so a collection can never be recorded without a traceable bag.
+//   POST /api/donations/:id/screening  — the cross-database case: write the questionnaire document
+//                                        to MongoDB, then finalise the decision in MySQL.
+// The document is written first; replaying the same submission key with the same answers finishes a
+// partial failure without duplicating it, and different answers under an old key are rejected.
+// MySQL cannot roll back MongoDB, so scripts/reconcile.mjs reports any orphaned links.
 export async function donationsTask(req: NextRequest, actor: Actor, rawId?: string, action = '') {
   const key = rawId ? v.id.parse(rawId) : 0;
   const data = req.method === 'DELETE' ? {} : await body(req);

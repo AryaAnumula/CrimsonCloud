@@ -1,4 +1,8 @@
-// A small DELIMITER-aware reader, not a SQL rewriter. Each file is native MySQL.
+// A small DELIMITER-aware reader, not a SQL rewriter: each file stays native MySQL.
+// Splits a .sql file into single statements, honouring `DELIMITER $$` blocks so triggers and
+// procedures (which contain semicolons) stay whole. Comment-only and blank lines are skipped;
+// returns the statements in order, or throws if the file ends mid-statement.
+// Note this only understands DELIMITER — it is deliberately not a parser.
 export function statements(text) {
   let delimiter = ';', buffer = ''; const result = [];
   for (const line of text.split(/\r?\n/)) {

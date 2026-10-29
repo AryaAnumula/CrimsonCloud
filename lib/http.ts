@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { Actor, HttpError, authenticate, checkOrigin } from './auth';
 
+// JSON response that is never cached: every payload here is either personal or live stock data.
 export const ok = (data: unknown, status = 200) => NextResponse.json(data, {
   status, headers: { 'Cache-Control': 'no-store' },
 });
+// 404 for "no such row" and for an action that is illegal in the row's current state
+// (for example releasing a unit that is already issued).
 export function missing(): never {
   throw new HttpError(404, 'Record not found or this action is not valid in its current state');
 }
+// Parses the JSON body with a 16 KB cap, so a huge or malformed payload is rejected before it
+// reaches validation or a query.
 export async function body(req: NextRequest) {
   const raw = await req.text();
   if (Buffer.byteLength(raw) > 16384) throw new HttpError(413, 'Request is too large');
@@ -18,6 +23,10 @@ type Params = Record<string, string>;
 type Task = (req: NextRequest, actor: Actor, params: Params) => Promise<NextResponse>;
 
 // Shared API plumbing only. Named task files contain the actual database work.
+// One pipeline for every route: origin check on writes, then session authentication (skipped only
+// for login), then error translation. MySQL failures become readable statuses instead of stack
+// traces — 409 for duplicate/trigger signals and lock contention, 400 for constraint violations,
+// 413 for oversized bodies, 503 when a database is unreachable — and the UI shows the message.
 export function endpoint(task: Task, publicLogin = false) {
   return async (req: NextRequest, context: { params: Promise<Params> }) => {
     try {

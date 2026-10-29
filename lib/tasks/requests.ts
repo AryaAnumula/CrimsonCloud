@@ -4,7 +4,13 @@ import { Actor } from '@/lib/auth';
 import { body, ok, missing } from '@/lib/http';
 import * as v from '@/lib/validation';
 
-// Task group: requests. Each branch performs one named operation.
+// Task: hospital requests and their fulfilment.
+//   POST   /api/requests            — create a request in PENDING
+//   POST   /api/requests/:id/verify — PENDING → VERIFIED; issuing is only allowed after this step
+//   POST   /api/requests/:id/cancel — cancel the unissued balance, keeping already-issued history
+//   DELETE /api/requests/:id        — delete a draft, only while it is still PENDING
+//   POST   /api/requests/:id/issue  — CALL issue_blood(...), which opens and commits its own
+//                                     transaction, so this branch deliberately does not wrap it again.
 export async function requestsTask(req: NextRequest, actor: Actor, rawId?: string, action = '') {
   const key = rawId ? v.id.parse(rawId) : 0;
   const data = req.method === 'DELETE' ? {} : await body(req);

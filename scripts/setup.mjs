@@ -5,6 +5,13 @@ import { readFile } from 'node:fs/promises';
 import { createHash } from 'node:crypto';
 import { statements } from './sql-files.mjs';
 
+// Task: create both databases from nothing, and keep them reproducible.
+// Phase 1 (MySQL): connect to the server without selecting a database, create the database if it is
+// missing, then apply 01_schema.sql and 02_workflows.sql. Each file's SHA-256 is recorded in
+// schema_migration, so a re-run skips what is already applied and refuses a file that changed after
+// setup — that is what stops a half-upgraded database from looking correct.
+// Phase 2 (MongoDB): create the collection with its $jsonSchema validator and indexes, or update an
+// existing collection in place, so the NoSQL rules are versioned in code rather than by hand.
 let sql;
 const mongo = new MongoClient(process.env.MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
 try {
@@ -29,6 +36,7 @@ try {
     filename varchar(100) PRIMARY KEY, checksum char(64) NOT NULL,
     applied_at datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
   ) ENGINE=InnoDB`);
+  // Apply each file at most once; the stored checksum is the record of what already ran.
   for (const name of ['01_schema.sql', '02_workflows.sql']) {
     const content = await readFile(new URL('../database/' + name, import.meta.url), 'utf8');
     const checksum = createHash('sha256').update(content).digest('hex');
@@ -66,6 +74,8 @@ try {
           follow_up: { bsonType: 'object', required: ['reason'], properties: { reason: { bsonType: 'string', minLength: 1, maxLength: 300 } } } } },
     },
   } };
+  // First run creates the collection with validation; later runs update the validator in place
+  // (collMod) so an existing demo database picks up rule changes without being dropped.
   if (!(await db.listCollections({ name: 'screening_submissions' }).hasNext()))
     await db.createCollection('screening_submissions', { validator });
   else await db.command({ collMod: 'screening_submissions', validator, validationLevel: 'strict', validationAction: 'error' });

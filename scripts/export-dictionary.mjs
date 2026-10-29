@@ -1,6 +1,9 @@
 import 'dotenv/config';
 import mysql from 'mysql2/promise';
 import { writeFile } from 'node:fs/promises';
+// Task: regenerate docs/DATA_DICTIONARY.md from the live schema.
+// Reads information_schema (columns, then foreign keys) rather than a hand-written list, so the
+// documented data dictionary cannot drift away from the tables that were actually created.
 const sql=await mysql.createConnection(process.env.DATABASE_URL);
 try{
  const [columns]=await sql.execute(`SELECT c.TABLE_NAME,c.COLUMN_NAME,c.COLUMN_TYPE,c.IS_NULLABLE,c.COLUMN_KEY,c.COLUMN_DEFAULT,c.EXTRA

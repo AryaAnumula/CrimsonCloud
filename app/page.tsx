@@ -5,9 +5,13 @@ import { FormEvent, useEffect, useRef, useState } from 'react';
 type Row = Record<string, any>;
 type Field = { name: string; label: string; type?: string; optional?: boolean; step?: string; min?: string;
   options?: { value: string; label: string }[] };
+// Formats a timestamp from the API for display. The API sends UTC ISO strings; the browser renders
+// them in local time, and an empty value becomes a dash instead of "Invalid Date".
 const dateTime = (value: string) => value ? new Date(value).toLocaleString() : '—';
 
-// Plain HTML table: no row buttons or extra navigation screens.
+// Read-only table of any API result, described by [column key, heading] pairs. Values ending in _at
+// (and next_expiry) are formatted as dates, arrays such as unit_ids are joined, and null becomes a
+// dash. Deliberately plain: no row buttons, so every write goes through a described task form.
 function Table({ rows, columns }: { rows: Row[]; columns: [string, string][] }) {
   if (!rows.length) return <p>No records found.</p>;
   return <div className="table-area"><table><thead><tr>{columns.map(([key, title]) =>
@@ -18,9 +22,13 @@ function Table({ rows, columns }: { rows: Row[]; columns: [string, string][] }) 
   </tr>)}</tbody></table></div>;
 }
 
+// Builds one form from a field description (text, number, date, datetime-local, select). On submit it
+// collects the values, drops blank optional fields instead of sending empty strings, converts
+// datetime-local input to an ISO instant, and only resets itself when the save reported success.
 function TaskForm({ title, fields, busy, onSave }: {
   title: string; fields: Field[]; busy: boolean; onSave: (data: Row) => Promise<boolean>;
 }) {
+  // One submit handler for every task form on the page; the field list decides what is sent.
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
@@ -48,6 +56,9 @@ function TaskForm({ title, fields, busy, onSave }: {
   </form>;
 }
 
+// The whole application on one page: sign-in, then four sections that mirror the database workflow —
+// available stock, donors/collections, requests/issues, and the database reports. State here is UI
+// state only; MySQL and MongoDB remain the source of truth, and every write re-reads them.
 export default function Home() {
   const [user, setUser] = useState<Row | null>(null);
   const [data, setData] = useState<Record<string, any>>({});
@@ -65,6 +76,8 @@ export default function Home() {
   const [adminTask, setAdminTask] = useState('Add hospital');
   const retries = useRef<Record<string, string>>({});
 
+  // Single fetch wrapper: JSON in, JSON out, never cached. A 401 clears the user so the page falls
+  // back to the login form, and a failed call throws the message returned by the API.
   async function api(path: string, method = 'GET', body?: Row) {
     const response = await fetch('/api/' + path, { method, cache: 'no-store',
       headers: { 'Content-Type': 'application/json' }, ...(body ? { body: JSON.stringify(body) } : {}) });
@@ -75,7 +88,9 @@ export default function Home() {
     }
     return result;
   }
-  // Refresh operational MySQL data. MongoDB reports are loaded separately below.
+  // Refresh all operational MySQL data in parallel (one request per endpoint) and store the results by
+  // endpoint name, which is what the tables below read. MongoDB reports are loaded separately, on
+  // demand, because they are filtered interactively.
   async function load() {
     const names = ['dashboard', 'groups', 'donors', 'donations', 'units', 'tests', 'storage', 'hospitals', 'requests', 'issues'];
     const values = await Promise.all(names.map(name => api(name)));
@@ -86,12 +101,16 @@ export default function Home() {
       if (!/sign in|session expired/i.test(e.message)) setError(e.message);
     }).finally(() => setLoading(false));
   }, []);
+  // Sign in, then immediately load the account and the data it is allowed to read.
   async function login(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy(true); setError('');
     const values = Object.fromEntries(new FormData(event.currentTarget));
     try { await api('login', 'POST', values); setUser(await api('me')); await load(); }
     catch (e) { setError((e as Error).message); } finally { setBusy(false); }
   }
+  // Shared write path for every task: send the request, show the API's message, mark reports stale,
+  // then refresh the tables. A refresh failure is reported as "saved, but refresh failed" — the write
+  // already happened, so the user must not be told it failed.
   async function save(path: string, values: Row, method = 'POST') {
     setBusy(true); setError(''); setMessage('');
     try {
@@ -104,6 +123,8 @@ export default function Home() {
     } catch (e) { setError((e as Error).message); return false; } finally { setBusy(false); }
   }
 
+  // Small helpers that turn loaded rows into form fields: rows() reads a table, field() a text, number
+  // or date input, select() a dropdown over rows, choice() a dropdown over fixed values.
   const rows = (name: string): Row[] => data[name] || [];
   const field = (name: string, label: string, type = 'text', optional = false): Field => ({ name, label, type, optional });
   const select = (name: string, label: string, records: Row[], key: string, text: string): Field => ({
@@ -146,7 +167,9 @@ export default function Home() {
       choice('role','Role',['STAFF','ADMIN']),field('password','New password (12–72 bytes)','password')],
   };
 
-  // Preserve operation keys across a failed retry; a new successful task gets a new key.
+  // Maps the selected collection task to its endpoint. The screening branch re-uses one operation key
+  // for the same submitted values, so retrying after a network error finishes the same submission
+  // rather than creating a second one; a new successful task gets a fresh key.
   async function submitCollection(values: Row) {
     if (collectionTask === 'Register donor') return save('donors',values);
     if (collectionTask === 'Record donation') return save('donations',values);
@@ -162,6 +185,8 @@ export default function Home() {
     if (collectionTask === 'Discard unit' && !confirm('Discard this unit? This cannot be undone.')) return false;
     return save(`units/${values.unit_id}/${collectionTask === 'Release unit' ? 'release' : 'discard'}`,{});
   }
+  // Maps the selected request task to its endpoint, with the same operation-key rule for issuing
+  // blood. Destructive choices ask for confirmation first; verifying does not, because it is not.
   async function submitRequest(values: Row) {
     if (requestTask === 'Create request') return save('requests',values);
     if (requestTask === 'Issue blood') {
@@ -174,6 +199,9 @@ export default function Home() {
     if (requestTask !== 'Verify request' && !confirm(requestTask + '? Earlier issued records will be retained.')) return false;
     return requestTask === 'Delete draft' ? save(`requests/${values.request_id}`,{},'DELETE') : save(`requests/${values.request_id}/${action}`,{});
   }
+  // Loads the four reports in parallel: filtered MongoDB questionnaires, the MongoDB summary
+  // aggregation, SQL traceability, and the audit log (Admin only). Filters apply to the document
+  // list and the aggregation always summarises every stored submission.
   async function loadReports(values: Row) {
     setBusy(true); setError('');
     try {

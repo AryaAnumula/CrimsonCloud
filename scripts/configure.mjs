@@ -1,5 +1,9 @@
 import { randomBytes } from 'node:crypto';
 import { existsSync, writeFileSync } from 'node:fs';
+// Task: create the private .env file exactly once.
+// Passwords come from the OS random generator rather than a template, and the file is written with
+// owner-only permissions. If .env already exists it is left alone on purpose: db:seed never resets an
+// existing account's password, so silently generating new values would lock the user out.
 if (existsSync('.env')) {
   console.log('.env already exists; it was not changed.');
 } else {

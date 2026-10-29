@@ -4,7 +4,9 @@ import { Actor, admin } from '@/lib/auth';
 import { body, ok, missing } from '@/lib/http';
 import * as v from '@/lib/validation';
 
-// Task group: storage. Each branch performs one named operation.
+// Task: POST /api/storage — Admin-only creation of a storage location (type, temperature, capacity).
+// The capacity is enforced later by the triggers that count retained units, and occupied_units is
+// maintained by those same triggers rather than by application code.
 export async function storageTask(req: NextRequest, actor: Actor, rawId?: string, action = '') {
   const key = rawId ? v.id.parse(rawId) : 0;
   const data = req.method === 'DELETE' ? {} : await body(req);

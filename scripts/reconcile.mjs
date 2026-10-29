@@ -1,4 +1,7 @@
-// Read-only diagnostics. Never deletes or silently rewrites screening history.
+// Task: cross-database consistency report. Read-only; it never deletes or rewrites screening history.
+// MySQL cannot roll back a MongoDB write, so this script lists the three ways the two stores can
+// drift apart: a donation pointing at a missing questionnaire, a questionnaire no donation claims,
+// and a storage occupancy counter that disagrees with the units actually retained.
 import 'dotenv/config';
 import mysql from 'mysql2/promise';
 import { MongoClient } from 'mongodb';
