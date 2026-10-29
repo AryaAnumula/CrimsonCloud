@@ -19,7 +19,7 @@ The eleven domain tables follow the supplied handwritten ER sketch: blood_group,
 
 ## Database choice and normalization
 
-**MySQL 8.4 / InnoDB** stores structured operational data: joins, referential integrity and atomic issuance belong here. Use int AUTO_INCREMENT keys, decimal quantities, enum states and UTC datetime(3) timestamps. Logical dependencies are separated into their own tables rather than copying donor/hospital details into every transaction. Blood group names and staff details are referenced by keys.
+**MySQL 8.0+ / InnoDB** stores structured operational data: joins, referential integrity and atomic issuance belong here. Use int AUTO_INCREMENT keys, decimal quantities, enum states and UTC datetime(3) timestamps. Logical dependencies are separated into their own tables rather than copying donor/hospital details into every transaction. Blood group names and staff details are referenced by keys.
 
 Document normalization through 1NF, 2NF and 3NF using the actual functional dependencies. Note two deliberate redundancies rather than claiming every column is perfectly normalized: unit blood_group_id supports direct stock filtering and is guarded against inconsistency; storage occupied_units is a maintained counter with capacity guards, not independent user input. Request status is also maintained with fulfillment rules. Diagram attributes and the SQL data dictionary describe the physical implementation.
 

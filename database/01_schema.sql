@@ -1,4 +1,4 @@
--- Blood Bank Management System | MySQL 8.4 LTS | InnoDB
+-- Blood Bank Management System | MySQL 8.0+ (written for 8.4, verified on 8.0.46) | InnoDB
 -- All application timestamps are UTC. Use synthetic data, not medical records.
 -- MySQL DDL commits implicitly; the setup runner records each completed file.
 

@@ -6,3 +6,10 @@ node_modules/
 *.log
 test-results/
 *.tsbuildinfo
+
+# Local setup scratch space: throwaway databases, logs and check scripts made on this laptop.
+.local/
+
+# Local handover / "secretary" notes created during machine setup.
+# They describe this laptop's state, not the project, so they are not part of the submission.
+HANDOVER.md

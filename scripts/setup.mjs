@@ -13,7 +13,15 @@ try {
   const database = url.pathname.slice(1);
   if (!/^[a-zA-Z0-9_]+$/.test(database)) throw new Error('Use a simple database name in DATABASE_URL');
   url.pathname = '/';
-  sql = await mysql.createConnection(url.href);
+  // Task: Fail with an instruction, not a raw driver stack, when the MySQL login is wrong.
+  try { sql = await mysql.createConnection(url.href); }
+  catch (error) {
+    const code = error?.code || 'unknown';
+    throw new Error(`Cannot sign in to MySQL (${code}).\n` +
+      '- Check that the MySQL service is running.\n' +
+      '- Check the username/password in DATABASE_URL in .env (URL-encode special characters).\n' +
+      `- Tried: ${url.host}${url.pathname}`, { cause: error });
+  }
   await sql.query('CREATE DATABASE IF NOT EXISTS `' + database + '` CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci');
   await sql.query('USE `' + database + '`');
   await sql.query("SET time_zone = '+00:00'");
@@ -33,7 +41,14 @@ try {
     await sql.execute('INSERT INTO schema_migration(filename, checksum) VALUES (?, ?)', [name, checksum]);
     console.log('Applied', name);
   }
-  await mongo.connect();
+  // Task: Same idea for MongoDB. The SQL files above are already committed by checksum,
+  // so re-running setup after starting MongoDB only repeats the document setup.
+  try { await mongo.connect(); }
+  catch (error) {
+    throw new Error(`MongoDB is not reachable at ${process.env.MONGODB_URI || '(MONGODB_URI is unset)'}.\n` +
+      'Install/start MongoDB Community Server (default port 27017), then run npm run db:setup again.\n' +
+      'The MySQL schema already applied in this run is recorded and will be skipped.', { cause: error });
+  }
   const db = mongo.db(process.env.MONGODB_DB || 'blood_bank');
   const validator = { $jsonSchema: {
     bsonType: 'object', required: ['submission_id','donation_id','form_version','decision','answers','payload_hash','submitted_by','submitted_at'],

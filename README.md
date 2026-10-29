@@ -11,7 +11,7 @@ Install these on your computer before running npm commands:
 | Requirement | Version / purpose |
 | --- | --- |
 | Node.js and npm | Node.js 22 or newer; npm comes with Node.js |
-| MySQL Community Server | MySQL 8.4; primary relational database |
+| MySQL Community Server | MySQL 8.0 or newer; primary relational database (verified on 8.0.46 and 8.4) |
 | MongoDB Community Server | MongoDB 7 or newer; screening documents |
 | Desktop browser | Chrome, Edge, Firefox or another current browser |
 | Optional database tools | MySQL Workbench and MongoDB Compass / mongosh |
@@ -122,7 +122,7 @@ lib/db.ts / mongo.ts                Database connections and SQL transaction hel
 lib/auth.ts / validation.ts         Sessions, roles and input validation
 database/01_schema.sql              Tables, keys, constraints and indexes
 database/02_workflows.sql           Functions, procedure, triggers and views
-database/03_ddl_demo.sql            Disposable CREATE / ALTER / DROP task
+database/03_ddl_demo.sql            DDL task: CREATE / ALTER / DROP, keys, constraints, index, view on a throwaway schema
 database/04_important_queries.sql   DML, JOIN, GROUP/HAVING, subquery and index evidence
 database/05_mongodb_queries.js      Document retrieval, aggregation and index examples
 scripts/                           Configure, setup, initialization, optional sample data
@@ -152,12 +152,14 @@ npm run db:reconcile    # Read-only cross-database and occupancy checks
 ## 7. Troubleshooting / upgrading from an earlier ZIP
 
 - **Connection refused:** start both server services; check ports/URIs. SQL operational screens do not depend on a successful Mongo report, but screening requires MongoDB persistence.
+- **`db:setup` stops at `MongoDB is not reachable`:** the MySQL files 01/02 were already applied in that run. Start MongoDB, then run `npm run db:setup` again; applied files are skipped by checksum, so nothing is duplicated.
+- **`db:setup` stops at `Cannot sign in to MySQL`:** the server is up but the login is wrong. Fix the username/password in `DATABASE_URL` (URL-encode `@` as `%40` and so on) and run it again.
 - **Access denied:** check URL-encoded MySQL credentials and local account privileges.
 - **SQL file changed after setup:** setup uses checksums. For this revised project use fresh names, e.g. `blood_bank_v4` in BOTH the MySQL URL path and MONGODB_DB, then run setup/seed. Old ZIP test results do not validate a changed version.
 - **Partial initial DDL failure:** MySQL DDL commits implicitly. Fix the privilege/configuration issue, then use fresh database names rather than assuming the failed DDL rolled back.
 - **Login fails after changing .env:** seed does not reset existing passwords. Use original passwords or a fresh project database. Do not insert readable passwords into staff.
 - **Origin not allowed:** use exactly http://localhost:3000. If changing port, update APP_ORIGIN to match and restart Next.js. localhost and 127.0.0.1 are different origins.
-- **Port 3000 busy:** close the other application or change the port and APP_ORIGIN together.
+- **Port 3000 busy, or the server prints a different port:** close the other application, or run `PORT=3000 npm run dev`. If a `PORT` variable is already set in your terminal, Next.js uses it instead of 3000, and `APP_ORIGIN` must match that port exactly.
 - **No choices in forms:** add hospitals/storage first; record a donor before a donation; only pending donations and appropriately staged units/requests appear for each task.
 - **Cannot release/issue:** check approved screening, passing SCREENING_PANEL, no failed test, future expiry, active storage and verified request. The database enforces these rules even if a UI request is forged.
 
