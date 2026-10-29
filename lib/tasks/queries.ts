@@ -127,3 +127,15 @@ export async function getReportsAudit(req: NextRequest, actor: Actor) {
   admin(actor);
     return ok((await pool.query('SELECT audit_id, table_name, record_id, action, actor_id, happened_at FROM audit_log ORDER BY audit_id DESC LIMIT 100')).rows);
 }
+
+
+ // GET /api/reports/expiring — available blood units expiring within seven days.
+export async function getReportsExpiring(req: NextRequest, actor: Actor) {
+  return ok((await pool.query(`
+    SELECT unit_id, blood_group, storage_id, volume_ml, expires_at, days_until_expiry
+    FROM expiring_soon
+    ORDER BY expires_at ASC, unit_id ASC
+    LIMIT 300
+  `)).rows);
+}
+

@@ -37,7 +37,7 @@ try {
     applied_at datetime(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3)
   ) ENGINE=InnoDB`);
   // Apply each file at most once; the stored checksum is the record of what already ran.
-  for (const name of ['01_schema.sql', '02_workflows.sql']) {
+  for (const name of ['01_schema.sql', '02_workflows.sql', '06_expiring_soon.sql']) {
     const content = await readFile(new URL('../database/' + name, import.meta.url), 'utf8');
     const checksum = createHash('sha256').update(content).digest('hex');
     const [[prior]] = await sql.query('SELECT checksum FROM schema_migration WHERE filename = ?', [name]);
