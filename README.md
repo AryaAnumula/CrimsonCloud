@@ -1,4 +1,4 @@
-# Blood Bank Management System
+# CrimsonCloud - Blood Bank Management System
 
 A functional **DBMS mini-project using MySQL + MongoDB**, with a minimal desktop website and all application APIs implemented in Next.js. Forms write actual database records; tables and reports read those records. There are no mock API responses, hard-coded inventory results, Redis or PostgreSQL dependencies.
 
